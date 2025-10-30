@@ -21,24 +21,29 @@
         (function () {
             const urlParams = new URLSearchParams(window.location.search);
             const matchId = urlParams.get('matchId');
+            
+            const mode = urlParams.get('mode');
 
             if (!matchId) {
                 document.body.innerHTML = '<h2>Error: Invalid Link</h2><p>Match ID was not found in the link.</p>';
                 return;
             }
 
-        
             const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.example.cricket_scorer_app';
             document.getElementById('download-link').href = playStoreUrl;
 
             const appUri = `cricketscorer://match?id=${matchId}`;
             window.location.href = appUri;
 
-            setTimeout(function () {
-                if (!document.hidden) {
-                    window.location.href = playStoreUrl;
-                }
-            }, 2500);
+            if (mode !== 'debug') {
+                setTimeout(function () {
+                    if (!document.hidden) {
+                        window.location.href = playStoreUrl;
+                    }
+                }, 2500);
+            } else {
+                 document.body.innerHTML += '<p style="color:red;">(Debug mode: Play Store redirect is disabled)</p>';
+            }
         })();
     </script>
 </body>
