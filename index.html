@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cricket Scorer Live Match</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; text-align: center; padding: 40px 20px; background-color: #f0f2f5; color: #333; }
+        h2 { color: #007bff; }
+        .loader { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .button { display: inline-block; margin-top: 20px; padding: 12px 24px; background-color: #28a745; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="loader"></div>
+    <h2>Redirecting to Live Score...</h2>
+    <p>If the app doesn't open automatically, please install it first.</p>
+    <a id="download-link" href="#" class="button">Download App</a>
+
+    <script>
+        (function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const matchId = urlParams.get('matchId');
+
+            if (!matchId) {
+                document.body.innerHTML = '<h2>Error: Invalid Link</h2><p>Match ID was not found in the link.</p>';
+                return;
+            }
+
+        
+            const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.example.cricket_scorer_app';
+            document.getElementById('download-link').href = playStoreUrl;
+
+            const appUri = `cricketscorer://match?id=${matchId}`;
+            window.location.href = appUri;
+
+            setTimeout(function () {
+                if (!document.hidden) {
+                    window.location.href = playStoreUrl;
+                }
+            }, 2500);
+        })();
+    </script>
+</body>
+</html>
