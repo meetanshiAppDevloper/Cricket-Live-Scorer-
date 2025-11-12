@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="gu">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8" />
@@ -106,6 +106,8 @@
     import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     (function () {
+
+
       const firebaseConfig = {
         apiKey: atob("QUl6YVN5RDNTUEZhNmI0dmc1bHdISzlobTd0SnV5aS05eFRyb0dJ"),
         authDomain: "cricket-scorer-app-a9d37.firebaseapp.com",
@@ -120,19 +122,67 @@
       const db = getFirestore(app);
 
       const urlParams = new URLSearchParams(window.location.search);
-      let matchId = urlParams.get('matchId')|| 'WoEUS9O98';
+      let matchId = urlParams.get('matchId');
       if (!matchId) {
         showError("Error: Match ID not found in the link.");
         return;
       }
 
-      const openAppBtn = document.getElementById('open-app-btn');
+        const openAppBtn = document.getElementById('open-app-btn');
       openAppBtn.style.display = 'block';
+      
+    
+      const originalButtonText = 'Open in CrickMatch App';
+
+      // આ ફંક્શન બટનને તેની મૂળ સ્થિતિમાં પાછું લાવશે
+      function resetButtonState() {
+          openAppBtn.disabled = false;
+          openAppBtn.innerHTML = originalButtonText;
+      }
+
+      // જ્યારે પણ યુઝર ટેબ પર પાછો આવે ત્યારે આ ઇવેન્ટ ફાયર થશે
+      document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) {
+              resetButtonState();
+          }
+      });
+      // -------------------------------------------
+      
       openAppBtn.addEventListener('click', () => {
+        openAppBtn.disabled = true;
+        openAppBtn.innerHTML = `
+            <div class="flex items-center justify-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Opening app...
+            </div>
+        `;
+        // --- iOS અને Android માટે લોજિક અહીં બદલ્યો છે ---
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
         const appUri = `cricketscorer://match?id=${matchId}`;
-        const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch';
-        window.location.href = appUri;
-        setTimeout(() => { if (!document.hidden) window.location.href = playStoreUrl; }, 2000);
+
+        // iOS માટે
+        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+          const appStoreUrl = 'https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198';// <--તમારો Apple App ID અહીં નાખો
+          window.location.href = appUri;
+          // જો એપ ન ખુલે તો 2.5 સેકન્ડ પછી App Store પર મોકલો
+          setTimeout(() => {
+            window.location.href = appStoreUrl;
+          }, 2500);
+        } 
+        // Android માટે
+        else {
+          const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch';
+          window.location.href = appUri;
+          // જો એપ ન ખુલે તો 2 સેકન્ડ પછી Play Store પર મોકલો
+          setTimeout(() => {
+             if (!document.hidden) {
+                window.location.href = playStoreUrl;
+             }
+          }, 2000);
+        }
       });
 
       const matchRef = doc(db, 'matches', matchId);
