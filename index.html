@@ -18,87 +18,104 @@
   </style>
 </head>
 
-<body class="min-h-screen">
+<body class="min-h-screen flex flex-col">
 
-  <div class="w-full bg-[#4A3A8C] text-white text-center p-3 text-xl font-bold shadow-lg">
-    CrickMatch Live Scorer App
+  <!-- ✅ નવી સ્ક્રીન: જ્યારે Match ID ન મળે ત્યારે આ જ દેખાશે -->
+  <div id="no-match-id-screen" class="hidden flex-grow flex flex-col items-center justify-center p-6 text-center h-screen">
+    <div class="bg-red-100 p-5 rounded-full mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Match ID Not Found</h1>
+    <p class="text-gray-600 max-w-xs mx-auto">It seems the link is broken or the Match ID is missing. Please check the URL and try again.</p>
   </div>
 
-  <div class="max-w-md mx-auto p-4">
-    <header class="text-center mb-4">
-      <div class="flex justify-center items-center gap-3 mb-1">
-        <h1 class="text-xl font-bold">Live Cricket Score</h1>
-      </div>
-      <p id="match-title" class="text-gray-600 font-medium">-- vs --</p>
-    </header>
+  <!-- ✅ Main Content Wrapper -->
+  <div id="main-content" class="w-full">
+    <div class="w-full bg-[#4A3A8C] text-white text-center p-3 text-xl font-bold shadow-lg">
+      CrickMatch Live Scorer App
+    </div>
 
-    <div id="scoreboard" class="bg-white rounded-xl shadow-lg p-5 space-y-4 hidden">
-      <div class="flex justify-between items-start">
-        <div>
-          <h2 id="battingTeamName" class="text-2xl font-bold">--</h2>
-          <div class="flex items-center gap-3 mt-1">
-            <div id="innings-info" class="text-sm text-gray-500 font-medium">-- Innings</div>
-          </div>
-          <div class="mt-2">
-            <span class="text-sm text-[#4A3A8C] font-medium">CRR : <span id="crr" class="font-bold">0.00</span></span>
-          </div>
+    <div class="max-w-md mx-auto p-4">
+      <header class="text-center mb-4">
+        <div class="flex justify-center items-center gap-3 mb-1">
+          <h1 class="text-xl font-bold">Live Cricket Score</h1>
         </div>
+        <p id="match-title" class="text-gray-600 font-medium">-- vs --</p>
+      </header>
 
-        <div class="flex justify-center items-start pt-1">
-          <span id="status-badge" class="text-white text-xs font-bold px-1.5 py-0 rounded-full flex items-center gap-0.5">
-            <span id="status-ping" class="relative flex h-1.5 w-1.5">
-              <span id="status-ping-animate" class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"></span>
-              <span id="status-ping-dot" class="relative inline-flex rounded-full h-1.5 w-1.5"></span>
+      <div id="scoreboard" class="bg-white rounded-xl shadow-lg p-5 space-y-4 hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <h2 id="battingTeamName" class="text-2xl font-bold">--</h2>
+            <div class="flex items-center gap-3 mt-1">
+              <div id="innings-info" class="text-sm text-gray-500 font-medium">-- Innings</div>
+            </div>
+            <div class="mt-2 flex flex-col gap-1">
+              <span class="text-sm text-[#4A3A8C] font-medium">CRR : <span id="crr" class="font-bold">0.00</span></span>
+              <span id="rrr-container" class="hidden text-sm text-[#4A3A8C] font-medium">RRR : <span id="rrr" class="font-bold">0.00</span></span>
+            </div>
+          </div>
+
+          <div class="flex justify-center items-start pt-1">
+            <span id="status-badge" class="text-white text-xs font-bold px-1.5 py-0 rounded-full flex items-center gap-0.5">
+              <span id="status-ping" class="relative flex h-1.5 w-1.5">
+                <span id="status-ping-animate" class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"></span>
+                <span id="status-ping-dot" class="relative inline-flex rounded-full h-1.5 w-1.5"></span>
+              </span>
+              <span id="status-text">--</span>
             </span>
-            <span id="status-text">--</span>
-          </span>
+          </div>
+
+          <div class="text-right flex flex-col items-end gap-1">
+            <div id="score" class="text-4xl font-extrabold text-gray-900">0/0</div>
+            <div id="overs" class="text-sm text-gray-500 font-medium">(0.0 Overs)</div>
+            <p id="target-display" class="text-md font-semibold text-gray-800 mt-1"></p>
+          </div>
         </div>
 
-        <div class="text-right flex flex-col items-end gap-1">
-          <div id="score" class="text-4xl font-extrabold text-gray-900">0/0</div>
-          <div id="overs" class="text-sm text-gray-500 font-medium">(0.0 Overs)</div>
-          <p id="target-display" class="text-md font-semibold text-gray-800 mt-1"></p>
+        <div id="target-needed-info" class="hidden text-center border-t border-gray-200 pt-3">
+          <p id="target-needed" class="text-sm font-semibold text-gray-800"></p>
+          <!-- ✅✅✅ ફેરફાર: Man of the Match માટે અહીં લાઇન ઉમેરી છે ✅✅✅ -->
+          <p id="mom-display" class="text-sm font-bold text-[#4A3A8C] mt-2 hidden"></p>
+        </div>
+
+        <div class="border-t border-gray-200 pt-3 space-y-2">
+          <div class="flex justify-between text-lg">
+            <span id="strikerName" class="font-semibold">Batsman 1 *</span>
+            <span id="strikerScore" class="font-mono">0 (0)</span>
+          </div>
+          <div class="flex justify-between text-lg">
+            <span id="nonStrikerName" class="font-semibold text-gray-600">Batsman 2</span>
+            <span id="nonStrikerScore" class="font-mono text-gray-600">0 (0)</span>
+          </div>
+        </div>
+
+        <div class="border-t border-gray-200 pt-3">
+          <div class="flex justify-between text-lg">
+            <span id="bowlerName" class="font-semibold">--</span>
+            <span id="bowlerFigures" class="font-mono">0-0 (0.0)</span>
+          </div>
+        </div>
+
+        <div class="border-t border-gray-200 pt-3">
+          <h3 class="text-sm font-semibold text-gray-500 mb-2 text-left">This Over:</h3>
+          <div id="thisOverContainer" class="flex flex-wrap gap-2"></div>
         </div>
       </div>
 
-      <div id="target-needed-info" class="hidden text-center border-t border-gray-200 pt-3">
-        <p id="target-needed" class="text-sm font-semibold text-gray-800"></p>
+      <div id="loading" class="text-center py-10">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4A3A8C] mx-auto"></div>
+        <p class="mt-3 text-gray-600">Loading live score...</p>
       </div>
 
-      <div class="border-t border-gray-200 pt-3 space-y-2">
-        <div class="flex justify-between text-lg">
-          <span id="strikerName" class="font-semibold">Batsman 1 *</span>
-          <span id="strikerScore" class="font-mono">0 (0)</span>
-        </div>
-        <div class="flex justify-between text-lg">
-          <span id="nonStrikerName" class="font-semibold text-gray-600">Batsman 2</span>
-          <span id="nonStrikerScore" class="font-mono text-gray-600">0 (0)</span>
-        </div>
-      </div>
+      <div id="error" class="hidden text-center py-8 bg-red-100 border-red-400 text-red-700 rounded-lg"></div>
 
-      <div class="border-t border-gray-200 pt-3">
-        <div class="flex justify-between text-lg">
-          <span id="bowlerName" class="font-semibold">--</span>
-          <span id="bowlerFigures" class="font-mono">0-0 (0.0)</span>
-        </div>
-      </div>
-
-      <div class="border-t border-gray-200 pt-3">
-        <h3 class="text-sm font-semibold text-gray-500 mb-2 text-left">This Over:</h3>
-        <div id="thisOverContainer" class="flex flex-wrap gap-2"></div>
-      </div>
+      <button id="open-app-btn" class="hidden w-full mt-6 bg-[#4A3A8C] hover:bg-[#3b2e70] text-white font-bold py-3 rounded-lg transition">
+        Open in CrickMatch App
+      </button>
     </div>
-
-    <div id="loading" class="text-center py-10">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4A3A8C] mx-auto"></div>
-      <p class="mt-3 text-gray-600">Loading live score...</p>
-    </div>
-
-    <div id="error" class="hidden text-center py-8 bg-red-100 border-red-400 text-red-700 rounded-lg"></div>
-
-    <button id="open-app-btn" class="hidden w-full mt-6 bg-[#4A3A8C] hover:bg-[#3b2e70] text-white font-bold py-3 rounded-lg transition">
-      Open in CrickMatch App
-    </button>
   </div>
 
   <script type="module">
@@ -106,8 +123,6 @@
     import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     (function () {
-
-
       const firebaseConfig = {
         apiKey: atob("QUl6YVN5RDNTUEZhNmI0dmc1bHdISzlobTd0SnV5aS05eFRyb0dJ"),
         authDomain: "cricket-scorer-app-a9d37.firebaseapp.com",
@@ -121,32 +136,35 @@
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
+      function showMatchNotFoundScreen() {
+        document.getElementById('main-content').classList.add('hidden');
+        document.getElementById('no-match-id-screen').classList.remove('hidden');
+        document.getElementById('loading').style.display = 'none';
+      }
+
       const urlParams = new URLSearchParams(window.location.search);
       let matchId = urlParams.get('matchId');
+
       if (!matchId) {
-        showError("Error: Match ID not found in the link.");
+        showMatchNotFoundScreen();
         return;
       }
 
-        const openAppBtn = document.getElementById('open-app-btn');
+      const openAppBtn = document.getElementById('open-app-btn');
       openAppBtn.style.display = 'block';
       
-    
       const originalButtonText = 'Open in CrickMatch App';
 
-      // આ ફંક્શન બટનને તેની મૂળ સ્થિતિમાં પાછું લાવશે
       function resetButtonState() {
           openAppBtn.disabled = false;
           openAppBtn.innerHTML = originalButtonText;
       }
 
-      // જ્યારે પણ યુઝર ટેબ પર પાછો આવે ત્યારે આ ઇવેન્ટ ફાયર થશે
       document.addEventListener('visibilitychange', () => {
           if (!document.hidden) {
               resetButtonState();
           }
       });
-      // -------------------------------------------
       
       openAppBtn.addEventListener('click', () => {
         openAppBtn.disabled = true;
@@ -159,29 +177,28 @@
               Opening app...
             </div>
         `;
-        // --- iOS અને Android માટે લોજિક અહીં બદલ્યો છે ---
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        const appUri = `cricketscorer://match?id=${matchId}`;
 
-        // iOS માટે
-        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-          const appStoreUrl = 'https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198';// <--તમારો Apple App ID અહીં નાખો
-          window.location.href = appUri;
-          // જો એપ ન ખુલે તો 2.5 સેકન્ડ પછી App Store પર મોકલો
-          setTimeout(() => {
-            window.location.href = appStoreUrl;
-          }, 2500);
-        } 
-        // Android માટે
-        else {
-          const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch';
-          window.location.href = appUri;
-          // જો એપ ન ખુલે તો 2 સેકન્ડ પછી Play Store પર મોકલો
-          setTimeout(() => {
-             if (!document.hidden) {
-                window.location.href = playStoreUrl;
-             }
-          }, 2000);
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        
+        if (/android/i.test(userAgent)) {
+            const packageName = 'com.meetanshi.crickmatch';
+            const scheme = 'cricketscorer';
+            const path = `match?id=${matchId}`;
+            const fallbackUrl = 'https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch';
+            const intentUrl = `intent://${path}#Intent;scheme=${scheme};package=${packageName};S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
+            window.location.href = intentUrl;
+            setTimeout(() => { resetButtonState(); }, 2000);
+        } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            const appStoreUrl = 'https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198';
+            const appUri = `cricketscorer://match?id=${matchId}`;
+            window.location.href = appUri;
+            setTimeout(() => {
+                if (!document.hidden) { window.location.href = appStoreUrl; }
+                resetButtonState();
+            }, 2500);
+        } else {
+            alert("Please open this link on a mobile device.");
+            resetButtonState();
         }
       });
 
@@ -192,24 +209,19 @@
           const inningsDocRef = doc(db, 'matches', matchId, 'innings', String(matchData.currentInnings || 1));
           
           onSnapshot(inningsDocRef, (inningsDoc) => {
-            // ✅✅✅ મુખ્ય ફેરફાર અહીં કરવામાં આવ્યો છે ✅✅✅
             if (inningsDoc.exists()) {
-              // જો ડેટા મળે, તો બધું બતાવો અને ભૂલ (જો હોય તો) છુપાવી દો
               document.getElementById('loading').style.display = 'none';
               document.getElementById('error').classList.add('hidden');
               document.getElementById('scoreboard').classList.remove('hidden');
               updateScoreboard(matchData, inningsDoc.data());
             } else { 
-              // જો ડેટા ન મળે, તો ભૂલ બતાવવાને બદલે લોડિંગ બતાવો
               document.getElementById('scoreboard').classList.add('hidden');
               document.getElementById('loading').style.display = 'block';
-              // વધુ સારો મેસેજ બતાવો
               document.getElementById('loading').querySelector('p').innerText = 'Starting next innings...';
             }
-            // -------------------------------------------
           });
         } else { 
-          showError("Match with the given ID was not found."); 
+          showMatchNotFoundScreen();
         }
       }, (error) => { 
         console.error("Firebase error:", error); 
@@ -233,12 +245,11 @@
       const statusPing = document.getElementById('status-ping-animate');
       const statusDot = document.getElementById('status-ping-dot');
       
-      // ✅✅✅ મુખ્ય ફેરફાર અહીં કરવામાં આવ્યો છે ✅✅✅
       if (matchData.matchStatus === 'Completed') {
         statusText.innerText = 'COMPLETED';
-        statusBadge.className = 'text-white text-xs font-bold px-1.5 py-0 rounded-full flex items-center gap-0.5 bg-blue-500'; // વાદળી રંગ
-        statusPing.className = 'hidden'; // એનિમેશન બંધ
-        statusDot.className = 'hidden';   // ડોટ પણ બંધ
+        statusBadge.className = 'text-white text-xs font-bold px-1.5 py-0 rounded-full flex items-center gap-0.5 bg-blue-500';
+        statusPing.className = 'hidden';
+        statusDot.className = 'hidden';
       } else if (matchData.matchStatus === 'Live') {
         statusText.innerText = 'LIVE';
         statusBadge.className = 'text-white text-xs font-bold px-1.5 py-0 rounded-full flex items-center gap-0.5 bg-red-500';
@@ -268,18 +279,48 @@
       const crr = (ballsBowled > 0) ? (totalRuns / (ballsBowled / 6)).toFixed(2) : '0.00';
       document.getElementById('crr').innerText = crr;
 
+       const rrrContainer = document.getElementById('rrr-container');
+      const rrrText = document.getElementById('rrr');
+
+      if (isSecondInnings && matchData.target && matchData.matchStatus === 'Live') {
+        const target = matchData.target;
+        const runsNeeded = target - totalRuns;
+        const totalOvers = matchData.matchSetup.totalOvers || 0;
+        const totalBalls = totalOvers * 6;
+        const ballsRemaining = totalBalls - ballsBowled;
+
+        if (ballsRemaining > 0 && runsNeeded > 0) {
+          const rrr = (runsNeeded * 6) / ballsRemaining;
+          rrrText.innerText = rrr.toFixed(2);
+          rrrContainer.classList.remove('hidden');
+        } else {
+          rrrContainer.classList.add('hidden');
+        }
+      } else {
+        rrrContainer.classList.add('hidden');
+      }
+
       const targetDisplayP = document.getElementById('target-display');
       const targetNeededInfoDiv = document.getElementById('target-needed-info');
       const targetNeededP = document.getElementById('target-needed');
+      const momDisplayP = document.getElementById('mom-display'); // MoM Reference
 
-      // ✅✅✅ "Completed" સ્ટેટસ માટેનો ફેરફાર અહીં પણ છે ✅✅✅
       if (matchData.matchStatus === 'Completed' && matchData.resultSummary) {
-        // જો મેચ પૂરી થઈ ગઈ હોય, તો પરિણામ બતાવો
-        targetDisplayP.innerHTML = ''; // Target વાળી લાઇન ખાલી કરો
+        targetDisplayP.innerHTML = ''; 
         targetNeededP.innerHTML = `<span class="text-green-600 font-bold">${matchData.resultSummary}</span>`;
         targetNeededInfoDiv.classList.remove('hidden');
+
+        // ✅✅✅ Man of the Match બતાવવા માટેનું Logic ✅✅✅
+        if (matchData.manOfTheMatch) {
+            momDisplayP.innerHTML = `🏆 Player of the Match: ${matchData.manOfTheMatch}`;
+            momDisplayP.classList.remove('hidden');
+        } else {
+            momDisplayP.classList.add('hidden');
+        }
       } else if (isSecondInnings && matchData.target) {
-        // જો બીજો દાવ ચાલુ હોય, તો ટાર્ગેટ બતાવો
+        // મેચ ચાલુ હોય તો MoM છુપાવો
+        momDisplayP.classList.add('hidden');
+
         const target = matchData.target;
         const runsNeeded = Math.max(0, target - totalRuns);
         const totalBallsInMatch = (matchData.matchSetup.totalOvers || 0) * 6;
@@ -306,9 +347,9 @@
         }
         targetNeededInfoDiv.classList.remove('hidden');
       } else {
-        // પહેલા દાવમાં આ બન્ને વિભાગ છુપાવી દો
         targetDisplayP.innerHTML = '';
         targetNeededInfoDiv.classList.add('hidden');
+        momDisplayP.classList.add('hidden');
       }
 
       const striker = battingCard?.[strikerIndex] || { name: "Batsman", runs: 0, balls: 0 };
