@@ -15,12 +15,29 @@
       background-color: #f3f4f6;
       color: #111827;
     }
+    /* Hide scrollbar for modal content but allow scrolling */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .tab-active {
+      border-bottom: 3px solid #4A3A8C;
+      color: #4A3A8C;
+      font-weight: 700;
+    }
+    .tab-inactive {
+      border-bottom: 3px solid transparent;
+      color: #6B7280;
+    }
   </style>
 </head>
 
 <body class="min-h-screen flex flex-col">
 
-  <!-- ✅ નવી સ્ક્રીન: જ્યારે Match ID ન મળે ત્યારે આ જ દેખાશે -->
+  <!-- ✅ Match ID Not Found Screen -->
   <div id="no-match-id-screen" class="hidden flex-grow flex flex-col items-center justify-center p-6 text-center h-screen">
     <div class="bg-red-100 p-5 rounded-full mb-6">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -32,7 +49,7 @@
   </div>
 
   <!-- ✅ Main Content Wrapper -->
-  <div id="main-content" class="w-full">
+  <div id="main-content" class="w-full pb-20">
     <div class="w-full bg-[#4A3A8C] text-white text-center p-3 text-xl font-bold shadow-lg">
       CrickMatch Live Scorer App
     </div>
@@ -46,6 +63,7 @@
       </header>
 
       <div id="scoreboard" class="bg-white rounded-xl shadow-lg p-5 space-y-4 hidden">
+        <!-- Main Header -->
         <div class="flex justify-between items-start">
           <div>
             <h2 id="battingTeamName" class="text-2xl font-bold">--</h2>
@@ -77,10 +95,10 @@
 
         <div id="target-needed-info" class="hidden text-center border-t border-gray-200 pt-3">
           <p id="target-needed" class="text-sm font-semibold text-gray-800"></p>
-          <!-- ✅✅✅ ફેરફાર: Man of the Match માટે અહીં લાઇન ઉમેરી છે ✅✅✅ -->
           <p id="mom-display" class="text-sm font-bold text-[#4A3A8C] mt-2 hidden"></p>
         </div>
 
+        <!-- Current Batsmen -->
         <div class="border-t border-gray-200 pt-3 space-y-2">
           <div class="flex justify-between text-lg">
             <span id="strikerName" class="font-semibold">Batsman 1 *</span>
@@ -92,6 +110,7 @@
           </div>
         </div>
 
+        <!-- Current Bowler -->
         <div class="border-t border-gray-200 pt-3">
           <div class="flex justify-between text-lg">
             <span id="bowlerName" class="font-semibold">--</span>
@@ -99,11 +118,17 @@
           </div>
         </div>
 
+        <!-- This Over -->
         <div class="border-t border-gray-200 pt-3">
           <h3 class="text-sm font-semibold text-gray-500 mb-2 text-left">This Over:</h3>
           <div id="thisOverContainer" class="flex flex-wrap gap-2"></div>
         </div>
       </div>
+      
+      <!-- ✅ NEW BUTTON: View Full Scorecard -->
+      <button id="view-scorecard-btn" class="hidden w-full mt-4 bg-white border-2 border-[#4A3A8C] text-[#4A3A8C] font-bold py-3 rounded-lg hover:bg-gray-50 shadow-sm transition">
+        View Full Scorecard
+      </button>
 
       <div id="loading" class="text-center py-10">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4A3A8C] mx-auto"></div>
@@ -118,9 +143,180 @@
     </div>
   </div>
 
+  <!-- ✅ FULL SCORECARD MODAL -->
+  <div id="scorecard-modal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-end sm:items-center">
+    <div class="bg-gray-50 w-full sm:w-[95%] sm:max-w-md h-[90vh] sm:h-[85vh] sm:rounded-xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+      
+      <!-- Modal Header -->
+      <div class="bg-[#4A3A8C] text-white p-4 flex justify-between items-center shrink-0">
+        <h2 class="text-lg font-bold">Full Scorecard</h2>
+        <button id="close-modal-btn" class="p-1 rounded-full hover:bg-white/20 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-white flex border-b border-gray-200 shrink-0">
+        <button id="tab-btn-1" class="flex-1 py-3 text-sm text-center tab-active transition" onclick="switchTab(1)">
+          1st Innings
+        </button>
+        <button id="tab-btn-2" class="flex-1 py-3 text-sm text-center tab-inactive transition" onclick="switchTab(2)">
+          2nd Innings
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="flex-grow overflow-y-auto p-3 no-scrollbar space-y-6">
+        
+        <!-- Innings 1 Content -->
+        <div id="innings-content-1" class="block">
+           <div id="sc-header-1" class="flex justify-between items-center mb-2 px-1">
+             <span class="font-bold text-gray-800 text-lg" id="team-name-1">--</span>
+             <span class="font-bold text-[#4A3A8C] text-lg" id="team-score-1">0/0 (0.0)</span>
+           </div>
+           
+           <!-- Batting Table 1 -->
+           <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-4 border border-gray-200">
+             <table class="w-full text-sm text-left">
+               <thead class="bg-gray-100 text-gray-600 font-medium border-b border-gray-200">
+                 <tr>
+                   <th class="py-2 px-3">Batter</th>
+                   <th class="py-2 px-1 text-right">R</th>
+                   <th class="py-2 px-1 text-right">B</th>
+                   <th class="py-2 px-1 text-right">4s</th>
+                   <th class="py-2 px-1 text-right">6s</th>
+                   <th class="py-2 px-2 text-right">SR</th>
+                 </tr>
+               </thead>
+               <tbody id="batting-body-1" class="divide-y divide-gray-100"></tbody>
+             </table>
+             <div class="p-2 flex justify-between text-sm bg-gray-50 border-t border-gray-100">
+                <span class="font-semibold">Extras</span>
+                <span id="extras-1">0</span>
+             </div>
+           </div>
+
+           <!-- Bowling Table 1 -->
+           <h3 class="text-sm font-bold text-gray-500 mb-2 px-1">Bowling</h3>
+           <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+             <table class="w-full text-sm text-left">
+               <thead class="bg-gray-100 text-gray-600 font-medium border-b border-gray-200">
+                 <tr>
+                   <th class="py-2 px-3">Bowler</th>
+                   <th class="py-2 px-1 text-right">O</th>
+                   <th class="py-2 px-1 text-right">M</th>
+                   <th class="py-2 px-1 text-right">R</th>
+                   <th class="py-2 px-1 text-right">W</th>
+                   <th class="py-2 px-2 text-right">ER</th>
+                 </tr>
+               </thead>
+               <tbody id="bowling-body-1" class="divide-y divide-gray-100"></tbody>
+             </table>
+           </div>
+        </div>
+
+        <!-- Innings 2 Content -->
+        <div id="innings-content-2" class="hidden">
+            <div id="msg-innings-2" class="text-center py-10 text-gray-500 hidden">Innings not started yet</div>
+            
+            <div id="data-innings-2">
+                <div id="sc-header-2" class="flex justify-between items-center mb-2 px-1">
+                    <span class="font-bold text-gray-800 text-lg" id="team-name-2">--</span>
+                    <span class="font-bold text-[#4A3A8C] text-lg" id="team-score-2">0/0 (0.0)</span>
+                </div>
+                
+                <!-- Batting Table 2 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-4 border border-gray-200">
+                    <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-100 text-gray-600 font-medium border-b border-gray-200">
+                        <tr>
+                        <th class="py-2 px-3">Batter</th>
+                        <th class="py-2 px-1 text-right">R</th>
+                        <th class="py-2 px-1 text-right">B</th>
+                        <th class="py-2 px-1 text-right">4s</th>
+                        <th class="py-2 px-1 text-right">6s</th>
+                        <th class="py-2 px-2 text-right">SR</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batting-body-2" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                    <div class="p-2 flex justify-between text-sm bg-gray-50 border-t border-gray-100">
+                        <span class="font-semibold">Extras</span>
+                        <span id="extras-2">0</span>
+                    </div>
+                </div>
+
+                <!-- Bowling Table 2 -->
+                <h3 class="text-sm font-bold text-gray-500 mb-2 px-1">Bowling</h3>
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+                    <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-100 text-gray-600 font-medium border-b border-gray-200">
+                        <tr>
+                        <th class="py-2 px-3">Bowler</th>
+                        <th class="py-2 px-1 text-right">O</th>
+                        <th class="py-2 px-1 text-right">M</th>
+                        <th class="py-2 px-1 text-right">R</th>
+                        <th class="py-2 px-1 text-right">W</th>
+                        <th class="py-2 px-2 text-right">ER</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bowling-body-2" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Global variables to hold state
+    let globalMatchData = null;
+    let globalInnings1Data = null;
+    let globalInnings2Data = null;
+
+    // --- Tab Switching Logic (Global Scope) ---
+    window.switchTab = function(tabId) {
+      // Buttons
+      const btn1 = document.getElementById('tab-btn-1');
+      const btn2 = document.getElementById('tab-btn-2');
+      // Content
+      const content1 = document.getElementById('innings-content-1');
+      const content2 = document.getElementById('innings-content-2');
+
+      if(tabId === 1) {
+        btn1.className = 'flex-1 py-3 text-sm text-center tab-active transition';
+        btn2.className = 'flex-1 py-3 text-sm text-center tab-inactive transition';
+        content1.classList.remove('hidden');
+        content2.classList.add('hidden');
+      } else {
+        btn1.className = 'flex-1 py-3 text-sm text-center tab-inactive transition';
+        btn2.className = 'flex-1 py-3 text-sm text-center tab-active transition';
+        content1.classList.add('hidden');
+        content2.classList.remove('hidden');
+      }
+    };
+
+    // --- Modal Logic ---
+    const modal = document.getElementById('scorecard-modal');
+    const openBtn = document.getElementById('view-scorecard-btn');
+    const closeBtn = document.getElementById('close-modal-btn');
+
+    openBtn.addEventListener('click', () => {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent body scroll
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = ''; 
+    });
 
     (function () {
       const firebaseConfig = {
@@ -152,20 +348,16 @@
 
       const openAppBtn = document.getElementById('open-app-btn');
       openAppBtn.style.display = 'block';
-      
-      const originalButtonText = 'Open in CrickMatch App';
 
+      // --- Deep Link Logic (Unchanged) ---
+      const originalButtonText = 'Open in CrickMatch App';
       function resetButtonState() {
           openAppBtn.disabled = false;
           openAppBtn.innerHTML = originalButtonText;
       }
-
       document.addEventListener('visibilitychange', () => {
-          if (!document.hidden) {
-              resetButtonState();
-          }
+          if (!document.hidden) resetButtonState();
       });
-      
       openAppBtn.addEventListener('click', () => {
         openAppBtn.disabled = true;
         openAppBtn.innerHTML = `
@@ -177,56 +369,56 @@
               Opening app...
             </div>
         `;
-
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        
         if (/android/i.test(userAgent)) {
-            const packageName = 'com.meetanshi.crickmatch';
-            const scheme = 'cricketscorer';
-            const path = `match?id=${matchId}`;
-            const fallbackUrl = 'https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch';
-            const intentUrl = `intent://${path}#Intent;scheme=${scheme};package=${packageName};S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
+            const intentUrl = `intent://match?id=${matchId}#Intent;scheme=cricketscorer;package=com.meetanshi.crickmatch;S.browser_fallback_url=https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch;end`;
             window.location.href = intentUrl;
-            setTimeout(() => { resetButtonState(); }, 2000);
+            setTimeout(resetButtonState, 2000);
         } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-            const appStoreUrl = 'https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198';
-            const appUri = `cricketscorer://match?id=${matchId}`;
-            window.location.href = appUri;
-            setTimeout(() => {
-                if (!document.hidden) { window.location.href = appStoreUrl; }
-                resetButtonState();
-            }, 2500);
+            window.location.href = `cricketscorer://match?id=${matchId}`;
+            setTimeout(() => { if (!document.hidden) window.location.href = 'https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198'; resetButtonState(); }, 2500);
         } else {
             alert("Please open this link on a mobile device.");
             resetButtonState();
         }
       });
 
+      // --- Firebase Listeners ---
+      
       const matchRef = doc(db, 'matches', matchId);
+      
+      // 1. Listen to Match Data
       onSnapshot(matchRef, (matchDoc) => {
         if (matchDoc.exists()) {
-          const matchData = matchDoc.data();
-          const inningsDocRef = doc(db, 'matches', matchId, 'innings', String(matchData.currentInnings || 1));
-          
-          onSnapshot(inningsDocRef, (inningsDoc) => {
-            if (inningsDoc.exists()) {
-              document.getElementById('loading').style.display = 'none';
-              document.getElementById('error').classList.add('hidden');
-              document.getElementById('scoreboard').classList.remove('hidden');
-              updateScoreboard(matchData, inningsDoc.data());
-            } else { 
-              document.getElementById('scoreboard').classList.add('hidden');
-              document.getElementById('loading').style.display = 'block';
-              document.getElementById('loading').querySelector('p').innerText = 'Starting next innings...';
-            }
-          });
-        } else { 
+          globalMatchData = matchDoc.data();
+          refreshAllViews();
+        } else {
           showMatchNotFoundScreen();
         }
-      }, (error) => { 
-        console.error("Firebase error:", error); 
-        showError("Unable to connect to Firebase."); 
+      }, (error) => {
+        console.error("Firebase match error:", error);
+        showError("Unable to connect to Firebase.");
       });
+
+      // 2. Listen to Innings 1 Data
+      onSnapshot(doc(db, 'matches', matchId, 'innings', '1'), (docSnapshot) => {
+        if (docSnapshot.exists()) {
+            globalInnings1Data = docSnapshot.data();
+            refreshAllViews();
+        }
+      });
+
+      // 3. Listen to Innings 2 Data
+      onSnapshot(doc(db, 'matches', matchId, 'innings', '2'), (docSnapshot) => {
+        if (docSnapshot.exists()) {
+            globalInnings2Data = docSnapshot.data();
+            refreshAllViews();
+        } else {
+            globalInnings2Data = null; // Reset if not started
+            refreshAllViews();
+        }
+      });
+
     })();
 
     function showError(msg) {
@@ -236,6 +428,202 @@
       errDiv.classList.remove('hidden');
     }
 
+    // Master function to update all UI
+    function refreshAllViews() {
+        if(!globalMatchData) return;
+
+        // Determine which innings to show on the main card
+        const currentInningsNum = globalMatchData.currentInnings || 1;
+        let activeInningsData = (currentInningsNum === 2) ? globalInnings2Data : globalInnings1Data;
+
+        // If Innings 1 is done but Innings 2 doc hasn't arrived yet, we might want to stick to Innings 1 or show loading
+        // But usually activeInningsData will be defined. 
+        
+        if (activeInningsData) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').classList.add('hidden');
+            document.getElementById('scoreboard').classList.remove('hidden');
+            document.getElementById('view-scorecard-btn').classList.remove('hidden'); // Show the button
+            updateScoreboard(globalMatchData, activeInningsData);
+        }
+
+        // Update Full Scorecard Modal whenever data changes
+        updateFullScorecard();
+    }
+
+    // Function to render the Full Scorecard Tables
+    function updateFullScorecard() {
+        if (!globalMatchData) return;
+
+        const { hostTeamName, visitorTeamName, tossWinner, optedTo } = globalMatchData.matchSetup;
+        
+        // Determine Team Names Logic
+        // Innings 1 Team: Toss Winner if Bat, or Toss Loser if Bat
+        let team1Name, team2Name;
+        
+        // Logic: if (TossWinner == Host && Opt == Bat) -> Host is Team 1
+        // if (TossWinner == Host && Opt == Bowl) -> Visitor is Team 1
+        if ((tossWinner === hostTeamName && optedTo === 'bat') || (tossWinner === visitorTeamName && optedTo === 'bowl')) {
+            team1Name = hostTeamName;
+            team2Name = visitorTeamName;
+        } else {
+            team1Name = visitorTeamName;
+            team2Name = hostTeamName;
+        }
+
+        // Render Innings 1
+        if (globalInnings1Data) {
+            document.getElementById('team-name-1').innerText = team1Name;
+            
+            const o = Math.floor(globalInnings1Data.ballsBowled / 6);
+            const b = globalInnings1Data.ballsBowled % 6;
+            document.getElementById('team-score-1').innerText = `${globalInnings1Data.totalRuns}/${globalInnings1Data.wickets} (${o}.${b})`;
+            
+            renderBattingTable(globalInnings1Data.battingCard, 'batting-body-1');
+            renderBowlingTable(globalInnings1Data.bowlingCard, 'bowling-body-1');
+            document.getElementById('extras-1').innerText = calculateExtras(globalInnings1Data);
+        }
+
+        // Render Innings 2
+        if (globalInnings2Data) {
+            document.getElementById('msg-innings-2').classList.add('hidden');
+            document.getElementById('data-innings-2').classList.remove('hidden');
+            document.getElementById('team-name-2').innerText = team2Name;
+
+            const o = Math.floor(globalInnings2Data.ballsBowled / 6);
+            const b = globalInnings2Data.ballsBowled % 6;
+            document.getElementById('team-score-2').innerText = `${globalInnings2Data.totalRuns}/${globalInnings2Data.wickets} (${o}.${b})`;
+
+            renderBattingTable(globalInnings2Data.battingCard, 'batting-body-2');
+            renderBowlingTable(globalInnings2Data.bowlingCard, 'bowling-body-2');
+            document.getElementById('extras-2').innerText = calculateExtras(globalInnings2Data);
+        } else {
+            document.getElementById('msg-innings-2').classList.remove('hidden');
+            document.getElementById('data-innings-2').classList.add('hidden');
+        }
+    }
+
+   function calculateExtras(data) {
+        if (!data || !data.extras) return "0";
+
+        const ex = data.extras;
+        const wd = ex.wides || 0;
+        const nb = ex.noBalls || 0;
+        const b = ex.byes || 0;
+        const lb = ex.legByes || 0;
+        const total = wd + nb + b + lb;
+
+        return `${total} (wd ${wd}, nb ${nb}, b ${b}, lb ${lb})`;
+    }
+
+function renderBattingTable(card, elementId) {
+        const tbody = document.getElementById(elementId);
+        tbody.innerHTML = '';
+        if (!card) return;
+
+        // ડેટા નક્કી કરો (Innings 1 or 2)
+        let specificInningsData = null;
+        if (elementId.includes('1')) {
+            specificInningsData = globalInnings1Data;
+        } else {
+            specificInningsData = globalInnings2Data;
+        }
+
+        const strikerIndex = specificInningsData?.strikerIndex;
+        const nonStrikerIndex = specificInningsData?.nonStrikerIndex;
+
+        card.forEach((p, idx) => {
+            const isStriker = (idx === strikerIndex);
+            const isNonStriker = (idx === nonStrikerIndex);
+            
+            // જો પ્લેયર રમ્યો હોય અથવા હાલ રમતો હોય તો જ બતાવો
+            const shouldShow = (p.balls > 0 || p.runs > 0 || p.isOut || isStriker || isNonStriker);
+
+            if (shouldShow) {
+                const sr = p.balls > 0 ? ((p.runs / p.balls) * 100).toFixed(1) : '0.0';
+                
+                let playerNameHtml = p.name;
+                let statusStyle = 'text-gray-800 font-medium';
+                let dismissalInfo = '';
+
+                if (p.isOut) {
+                    // --- જો આઉટ હોય ---
+                    statusStyle = 'text-red-600 font-medium'; 
+                    let dismissalText = 'out';
+                    
+                    if (p.dismissalType) {
+                         if (p.dismissalType === 'bowled') dismissalText = `b ${p.bowlerName || ''}`;
+                         else if (p.dismissalType === 'caught') dismissalText = `c ${p.fielderName || ''} b ${p.bowlerName || ''}`;
+                         else if (p.dismissalType === 'lbw') dismissalText = `lbw b ${p.bowlerName || ''}`;
+                         else if (p.dismissalType === 'runOut') dismissalText = `run out (${p.fielderName || ''})`;
+                         else if (p.dismissalType === 'stumped') dismissalText = `st ${p.fielderName || ''} b ${p.bowlerName || ''}`;
+                         else dismissalText = p.dismissalText || p.dismissalType;
+                    }
+                    dismissalInfo = `<div class="text-xs text-gray-500 mt-0.5 italic">${dismissalText}</div>`;
+
+                } else if (p.isRetired) {
+                    // --- જો રિટાયર્ડ હોય ---
+                    statusStyle = 'text-gray-500';
+                    dismissalInfo = `<div class="text-xs text-gray-500 mt-0.5 italic">retired hurt</div>`;
+
+                } else {
+                    // --- જો નોટ આઉટ હોય ---
+                    statusStyle = 'text-[#4A3A8C] font-bold'; 
+                    
+                    // ✅✅✅ ફેરફાર: ફક્ત સ્ટ્રાઈકરને જ સ્ટાર (*) આપવો
+                    if (isStriker) {
+                        playerNameHtml = `${p.name} *`;
+                    } else {
+                        playerNameHtml = p.name; // Non-striker ને સ્ટાર નહિ
+                    }
+                    
+                    dismissalInfo = `<div class="text-xs text-[#4A3A8C] mt-0.5 font-medium">not out</div>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-100 hover:bg-gray-50 transition";
+                tr.innerHTML = `
+                    <td class="py-2 px-3">
+                        <div class="${statusStyle}">${playerNameHtml}</div>
+                        ${dismissalInfo}
+                    </td>
+                    <td class="py-2 px-1 text-right font-medium">${p.runs}</td>
+                    <td class="py-2 px-1 text-right text-gray-500">${p.balls}</td>
+                    <td class="py-2 px-1 text-right text-gray-500">${p.fours || 0}</td>
+                    <td class="py-2 px-1 text-right text-gray-500">${p.sixes || 0}</td>
+                    <td class="py-2 px-2 text-right text-gray-500">${sr}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        });
+    }
+
+    function renderBowlingTable(card, elementId) {
+const tbody = document.getElementById(elementId);
+tbody.innerHTML = '';
+if (!card) return;
+card.forEach(b => {
+        if(b.ballsBowled > 0 || b.overs > 0) {
+            const overs = Math.floor(b.ballsBowled / 6);
+            const balls = b.ballsBowled % 6;
+            const totalOversDec = b.ballsBowled / 6;
+            const er = totalOversDec > 0 ? (b.runsConceded / totalOversDec).toFixed(1) : '0.0';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="py-2 px-3 font-medium text-gray-800">${b.name}</td>
+                <td class="py-2 px-1 text-right text-gray-600">${overs}.${balls}</td>
+                <td class="py-2 px-1 text-right text-gray-500">${b.maidens || 0}</td>
+                <td class="py-2 px-1 text-right text-gray-500">${b.runsConceded}</td>
+                <td class="py-2 px-1 text-right font-bold text-[#4A3A8C]">${b.wickets}</td>
+                <td class="py-2 px-2 text-right text-gray-500">${er}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+    });
+}
+ 
+    // --- Original Logic for Summary Card (Unchanged mostly) ---
      function updateScoreboard(matchData, inningsData) {
       const { hostTeamName, visitorTeamName, tossWinner, optedTo } = matchData.matchSetup;
       document.getElementById('match-title').innerText = `${hostTeamName} vs ${visitorTeamName}`;
@@ -244,7 +632,7 @@
       const statusText = document.getElementById('status-text');
       const statusPing = document.getElementById('status-ping-animate');
       const statusDot = document.getElementById('status-ping-dot');
-      
+
       if (matchData.matchStatus === 'Completed') {
         statusText.innerText = 'COMPLETED';
         statusBadge.className = 'text-white text-xs font-bold px-1.5 py-0 rounded-full flex items-center gap-0.5 bg-blue-500';
@@ -261,7 +649,7 @@
         statusPing.className = 'hidden';
         statusDot.className = 'relative inline-flex rounded-full h-1.5 w-1.5 bg-gray-400';
       }
-      
+
       const currentInnings = matchData.currentInnings || 1;
       document.getElementById('innings-info').innerText = currentInnings === 1 ? '1st Innings' : '2nd Innings';
 
@@ -303,14 +691,13 @@
       const targetDisplayP = document.getElementById('target-display');
       const targetNeededInfoDiv = document.getElementById('target-needed-info');
       const targetNeededP = document.getElementById('target-needed');
-      const momDisplayP = document.getElementById('mom-display'); // MoM Reference
+      const momDisplayP = document.getElementById('mom-display'); 
 
       if (matchData.matchStatus === 'Completed' && matchData.resultSummary) {
-        targetDisplayP.innerHTML = ''; 
+        targetDisplayP.innerHTML = '';
         targetNeededP.innerHTML = `<span class="text-green-600 font-bold">${matchData.resultSummary}</span>`;
         targetNeededInfoDiv.classList.remove('hidden');
 
-        // ✅✅✅ Man of the Match બતાવવા માટેનું Logic ✅✅✅
         if (matchData.manOfTheMatch) {
             momDisplayP.innerHTML = `🏆 Player of the Match: ${matchData.manOfTheMatch}`;
             momDisplayP.classList.remove('hidden');
@@ -318,7 +705,6 @@
             momDisplayP.classList.add('hidden');
         }
       } else if (isSecondInnings && matchData.target) {
-        // મેચ ચાલુ હોય તો MoM છુપાવો
         momDisplayP.classList.add('hidden');
 
         const target = matchData.target;
